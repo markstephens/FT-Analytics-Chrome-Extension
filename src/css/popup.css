@@ -1,0 +1,72 @@
+body {
+    width: 300px;
+    font: 0.9em Arial;
+}
+h1 {
+    font-size: 1.4em;
+    text-shadow: 1px 1px 1px #CCC;
+}
+h2 {
+    font-size: 1.1em;
+}
+label {
+    position: relative;
+    width: 210px;
+    padding-right: 90px;
+    display: block;
+}
+input[type=checkbox] {
+    -webkit-appearance: none;	/* Remove Safari default */
+    outline: none;
+    width: 80px;
+    height: 20px;
+    background: #EEE;
+    border: solid 1px #CCC;
+    border-radius: 2px;
+    box-shadow: 1px 1px 1px #999;
+    position: absolute;
+    right: 0;
+}
+input[type="checkbox"]:before, input[type="checkbox"]:after {
+    text-align: center;
+    position: absolute;
+    z-index: 1;
+    width: 35px;
+    height: 14px;
+    top: 1px;
+    box-shadow: inset 1px 1px 1px 1px #666;
+    padding-top: 1px;
+    font-size: 0.90em;
+}
+input[type="checkbox"]:before {
+    left: 1px;
+    background: #E55;
+    content: "Off";
+}
+input[type="checkbox"]:after, input[type="checkbox"]:checked:after {
+    content: "On";
+    right: 1px;
+    background: #3C3;
+    border: none;
+}
+input[type="checkbox"]:after,input[type="checkbox"]:checked:before {
+    background: #EEE;
+    border: solid 1px #999;
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%,#EEE),
+        color-stop(8%,#EEE), color-stop(10%,#999), color-stop(12%,#EEE),
+        color-stop(18%,#EEE), color-stop(20%,#999), color-stop(22%,#EEE),
+        color-stop(28%,#EEE), color-stop(30%,#999), color-stop(32%,#EEE),
+        color-stop(38%,#EEE), color-stop(40%,#999), color-stop(42%,#EEE),
+        color-stop(48%,#EEE), color-stop(50%,#999), color-stop(52%,#EEE),
+        color-stop(58%,#EEE), color-stop(60%,#999), color-stop(62%,#EEE),
+        color-stop(68%,#EEE), color-stop(70%,#999), color-stop(72%,#EEE),
+        color-stop(78%,#EEE), color-stop(80%,#999), color-stop(82%,#EEE),
+        color-stop(88%,#EEE), color-stop(90%,#999), color-stop(92%,#EEE));
+    box-shadow: 1px 0 1px #999;
+    text-indent: -999px;
+    border-radius: 2px;
+}
+input[type="checkbox"]:checked:after {
+    box-shadow: inset 1px 1px 1px 1px #666;
+    text-indent: 0;
+}
