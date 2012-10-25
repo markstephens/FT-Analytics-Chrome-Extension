@@ -13,7 +13,9 @@
     "permissions": [
         "tabs",
         "webRequest",
-        "http://www.ft.com/*"
+        "http://ft.com/",
+        "http://www.ft.com/*",
+        "http://search.ft.com/*"
     ],
 
     "background": {

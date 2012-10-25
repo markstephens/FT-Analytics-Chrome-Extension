@@ -81,7 +81,7 @@ FTAnalyticsChromeExtension.prototype.jquery = function(tab, callback){
 FTAnalyticsChromeExtension.prototype.core = function(tab, callback){
     if (typeof callback === "undefined") { callback = function(){} }
 
-    var needs_loading = !this.isLoaded(tab, 'jquery');
+    var needs_loading = !this.isLoaded(tab, 'core');
 
     if(needs_loading){
             this.log('LOADER: Loading','Core');
