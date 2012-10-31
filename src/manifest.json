@@ -12,10 +12,14 @@
 
     "permissions": [
         "tabs",
+        "storage",
         "webRequest",
+        "http://stats.ft.com/si/*",
+        "http://statstest.ft.com/si/*",
         "http://ft.com/",
         "http://www.ft.com/*",
-        "http://search.ft.com/*"
+        "http://search.ft.com/*",
+        "http://howtospendit.ft.com/*"
     ],
 
     "background": {

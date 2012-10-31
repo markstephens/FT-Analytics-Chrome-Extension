@@ -72,6 +72,7 @@ FTAnalyticsChromeExtension.prototype.jquery = function(tab, callback){
     if(needs_loading) {
         this.log('LOADER: Loading','jQuery');
         chrome.tabs.executeScript(tab, { file : "js/core/jquery-1.8.2.min.js" }, callback);
+        chrome.tabs.executeScript(tab, { file : "js/core/jquery-ui-1.9.1.custom.min.js" }, callback);
     }
     else {
         callback();
@@ -84,13 +85,13 @@ FTAnalyticsChromeExtension.prototype.core = function(tab, callback){
     var needs_loading = !this.isLoaded(tab, 'core');
 
     if(needs_loading){
-            this.log('LOADER: Loading','Core');
-            chrome.tabs.insertCSS(tab, { file : "css/onscreen.css" })
-            chrome.tabs.executeScript(tab, { file : "js/core/extension.js" }, callback);
-        }
-        else {
-            callback();
-        }
+        this.log('LOADER: Loading','Core');
+        chrome.tabs.insertCSS(tab, { file : "css/onscreen.css" })
+        chrome.tabs.executeScript(tab, { file : "js/core/extension.js" }, callback);
+    }
+    else {
+        callback();
+    }
 };
 
 FTAnalyticsChromeExtension.prototype.position = function(tab, callback){
@@ -113,13 +114,7 @@ FTAnalyticsChromeExtension.prototype.decode = function(tab, callback){
     if (typeof callback === "undefined") { callback = function(){} }
     this.log('LOADER: Loading','Decode');
 
-    var self = this;
-
-    chrome.webRequest.onBeforeRequest.addListener(function(request) {
-        self.log(request);
-    }, {urls: ["<all_urls>"]});
-
     chrome.tabs.executeScript(tab, { file : "js/decode.js" }, function(){
-        chrome.tabs.executeScript(tab, { code : "FTAnalyticsChromeExtension.Decode.init("+tab.id+");"}, callback);
+        chrome.tabs.executeScript(tab, { code : "FTACEDecode.init();"}, callback);
     });
 }
