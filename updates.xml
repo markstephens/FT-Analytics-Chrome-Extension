@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
+    <app appid='khoiaglncgjpgkhjpbeiplhblbjmfnme'>
+        <updatecheck codebase='http://git.svc.ft.com/raw/digipub%2Fft-analytics-chrome-extension.git/2929abda4bd23c93553b3778c3605e4bc4ae63f2%2FFTAnalyticsChromeExtension.crx' version='0.1' />
+    </app>
+</gupdate>
