@@ -4,7 +4,9 @@ ftace.init();
 chrome.storage.onChanged.addListener(function(changes, namespace) {
     for (var key in changes) {
         var storageChange = changes[key];
-        ftace.user_data[key] = storageChange.newValue;
+        if (storageChange.hasOwnProperty("newValue")) {
+            ftace.user_data[key] = storageChange.newValue;
+        }
     }
 });
 

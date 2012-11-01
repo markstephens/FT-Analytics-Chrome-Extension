@@ -12,6 +12,7 @@ FTAnalyticsChromeExtension.prototype.startupData = function(callback) {
 FTAnalyticsChromeExtension.prototype.setUserData = function(name, value) {
     var obj = {};
     obj[name] = value;
+    this.user_data[name] = value;
     chrome.storage.sync.set(obj);
 };
 
@@ -92,12 +93,32 @@ FTAnalyticsChromeExtension.prototype.decodeIJentoRequest = function (url) {
      }*/
     return str;
 };
-FTAnalyticsChromeExtension.prototype.storeNetworkRequest = function(tabid, request) {
-    if(!this.network_requests.hasOwnProperty(tabid)) {
-        this.network_requests[tabid] = [];
-    }
 
-    this.network_requests[tabid].push({ timestamp:request.timeStamp, url:this.decodeIJentoRequest(request.url) });
+FTAnalyticsChromeExtension.prototype.storeNetworkRequest = function(tabid, request) {
+    if(/^http:\/\/stats/.test(request.url)){
+        var self = this;
+
+        chrome.tabs.get(tabid,function(tab){
+            if(!self.network_requests.hasOwnProperty(tabid)) {
+                self.network_requests[tabid] = {};
+            }
+
+            var home_re = /^http:\/\/www.ft.com\/home\//, title = tab.title, url = tab.url;
+
+            if(home_re.test(url)){
+                title = url.replace(home_re,'').toUpperCase() + " Home";
+            }
+            else {
+                title = title.replace(" - FT.com", "");
+            }
+
+            if(!self.network_requests[tabid].hasOwnProperty(url)) {
+                self.network_requests[tabid][url] = { title: title, requests: []};
+            }
+
+            self.network_requests[tabid][url].requests.push({ timestamp:request.timeStamp, url:self.decodeIJentoRequest(request.url) });
+        })
+    }
 };
 FTAnalyticsChromeExtension.prototype.getNetworkRequests = function(tabid) {
     if(this.network_requests.hasOwnProperty(tabid)) {

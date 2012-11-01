@@ -31,13 +31,14 @@ FTAnalyticsChromeExtension.prototype.setIcon = function(tabId){
     var i, active = false, data = this.getUserData();
 
     for(i=0; i < this.modules.length; i++){
+        this.log("ICON: ",this.modules[i], data.hasOwnProperty(this.modules[i]));
         if(data.hasOwnProperty(this.modules[i])) {
             active = true;
             break;
         }
     }
 
-    this.log('setIcon active?', active);
+    this.log('setIcon active?', active, data);
 
     if(active) {
         chrome.pageAction.setIcon({ path: this.activeIcon, tabId: tabId});

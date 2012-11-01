@@ -36,68 +36,57 @@ var FTACEPosition = (function(){
         init : function() {
             $(document).ready(function(){
                 chrome.extension.sendMessage({}, function(ftace){
-                    if($('#'+ftace.prefix+'_link_positionator').length === 0) {
-                        $(document.createElement('div')).attr('id', ftace.prefix+'_link_positionator').addClass(ftace.prefix).css({display: 'none'}).appendTo('body');
-                        $(document.createElement('div')).attr('id', ftace.prefix+'_test').addClass(ftace.prefix).css({display: 'fixed', top: 10, right: 10}).appendTo('body').html('<ul></ul>');
+                    $('[data-comp-view],[data-comp-name],[data-zone]').on('mouseenter.'+ftace.prefix,function () {
+                        var $element = $(this),
+                            $color,
+                            $data = getElementPositionalData($element);
 
-                        $('[data-comp-view],[data-comp-name],[data-zone]').on('mouseenter.'+ftace.prefix,function () {
-                            var $element = $(this),
-                                $color,
-                                $data = getElementPositionalData($element);
+                        $increment = ($increment > $max_increment ? 0 : ($increment + 1));
+                        $color = $colors[$increment];
+                        $path[$data.label[$data.label.length-1]] = $color;
+                        $element.css('outline', 'dashed 2px ' + $color);
 
-                            $increment = ($increment > $max_increment ? 0 : ($increment + 1));
-                            $color = $colors[$increment];
-                            $path[$data.label[$data.label.length-1]] = $color;
-                            $element.css('outline', 'dashed 2px ' + $color);
+                        $('#'+ftace.prefix+'_test').append('<li>'+$data.label[$data.label.length-1]+': '+$color+'</li>')
+                    });
 
-                            $('#'+ftace.prefix+'_test').append('<li>'+$data.label[$data.label.length-1]+': '+$color+'</li>')
+                    $('[data-comp-view],[data-comp-name],[data-zone]').on('mouseleave.'+ftace.prefix,function () {
+                        var $element = $(this),
+                            $data = getElementPositionalData($element);
 
-                        });
-                        $('[data-comp-view],[data-comp-name],[data-zone]').on('mouseleave.'+ftace.prefix,function () {
-                            var $element = $(this),
-                                $data = getElementPositionalData($element);
+                        delete $path[$data.label.join('/')];
+                        $increment = ($increment < 0 ? 0 : ($increment - 1));
+                        $element.css('outline', '');
+                        $('#'+ftace.prefix+'_test li:last').remove();
+                    });
 
-                            delete $path[$data.label.join('/')];
-                            $increment = ($increment < 0 ? 0 : ($increment - 1));
-                            $element.css('outline', '');
-                            $('#'+ftace.prefix+'_test li:last').remove();
-                        });
+                    $(document).tooltip({ track: true, items: "[data-pos] a", hide: false });
 
-                        $('[data-pos] a').on('mouseenter.'+ftace.prefix,function () {
-                            var $element = $(this),
-                                $data = getElementPositionalData($element),
-                                $label=[],
-                                i= 0,n=0;
+                    $('[data-pos] a').on('mouseenter.'+ftace.prefix,function () {
+                        var $element = $(this),
+                            $data = getElementPositionalData($element),
+                            $label=[],
+                            i= 0,n=0;
 
-                            $element.css('outline', 'dashed 2px #F00');
+                        $element.css('outline', 'dashed 2px #F00');
 
-                            $path[$data.label[$data.label.length-1]] = "#F00";
-                            if($data.label[$data.label.length-1] == "storyPackage"){
-                                $path[$data.label[$data.label.length-2]] = "#F00";
-                            }
+                        $path[$data.label[$data.label.length-1]] = "#F00";
+                        if($data.label[$data.label.length-1] == "storyPackage"){
+                            $path[$data.label[$data.label.length-2]] = "#F00";
+                        }
 
-                            for(i=0;i<$data.label.length;i++) {
-                                $label.push('<span style="color:'+$path[$data.label[i]]+'">'+$data.label[i]+'</span>');
-                            }
+                        for(i=0;i<$data.label.length;i++) {
+                            $label.push('<span style="color:'+$path[$data.label[i]]+'">'+$data.label[i]+'</span>');
+                        }
 
+                        //$(document).tooltip("enable");
+                        $(document).tooltip("option", "content", $label.join('/'));
+                        //$(document).tooltip("open");
+                    });
 
-                            $('#'+ftace.prefix+'_link_positionator').show().css({ top : $data.position.top }).html($label.join('/'));
-                        });
-
-                        $('[data-pos] a').on('mouseleave.'+ftace.prefix,function () {
-                            $(this).css('outline', '');
-                            $('#'+ftace.prefix+'_link_positionator').hide();
-                        });
-                        $('[data-pos] a').on('mousemove.'+ftace.prefix,function(event){
-                            $('#'+ftace.prefix+'_link_positionator').css({ top : event.pageY+10, left: event.pageX+10 })
-                        });
-
-                        $(document).on('keydown.'+ftace.prefix,function(event) {
-                            if(event.keyCode === 27) {
-                                FTACEPosition.stop();
-                            }
-                        });
-                    }
+                    $('[data-pos] a').on('mouseleave.'+ftace.prefix,function () {
+                        $(this).css('outline', '');
+                        $(document).tooltip("close");
+                    });
                 });
             });
         },
@@ -108,8 +97,7 @@ var FTACEPosition = (function(){
 
         stop : function(){
             chrome.extension.sendMessage({}, function(ftace){
-                $('#'+ftace.prefix+'_link_positionator').remove();
-                // TODO Teardown doesn't seem to be fully working
+                $(document).tooltip("destroy");
                 $('[data-comp-view],[data-comp-name],[data-zone],[data-pos] a').off('.'+ftace.prefix);
             });
         }

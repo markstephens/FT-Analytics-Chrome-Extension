@@ -20,29 +20,42 @@ Date.prototype.getFullMonth = function(){
 FTACEDecode = (function () {
     'use strict';
 
-    function newRequest(request){
-        chrome.extension.sendMessage({}, function(ftace){
-            var url = request.url,
-                time = new Date(request.timestamp);
+    function createTabs(prefix, allRequests){
+        $.each(allRequests, function(url, details){
 
-            url = '<mark>' + url.split('&').join('</mark><wbr />&amp;<mark>') + '</mark>';
-            url = url.replace('?','</mark>?<mark>');
-            url = url.replace(/%20/g,'&nbsp;');
-            url = url.replace(/%2C/g,',');
-            url = url.replace(/%3B/g,';');
-            url = url.replace(/%3D/g,'=');
-            url = url.replace(/undefined/g,'<span class="undefined">undefined</span>');
+            var items = [], id = prefix + '_' + url.replace(/\W+/g, '').toLowerCase();
 
-            $('#'+ftace.prefix+'_link_decoder ol').append([
-                '<li>',
-                '<a href="javascript://">',
-                '<time>',time.getDate(),'&nbsp;',time.getFullMonth(),'&nbsp;',time.getFullYear(),'&nbsp;',time.getHours(),':',time.getSeconds(),'</time>',
-                ':&nbsp;',
-                url,
-                '</a>',
-                '</li>'
-            ].join(''));
+            $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul').append('<li><a href="#'+id+'" title="'+url+'"><span>'+details.title+'</span></a></li>');
+
+            for(var i=0;i<details.requests.length;i++){
+                items.push(newRequest(details.requests[i]));
+            }
+
+            $('#'+prefix+'_link_decoder #'+prefix+'_tabs').append('<div id="'+id+'"><ol>'+items.join('')+'</ol></div>');
         });
+    }
+
+    function newRequest(request){
+        var url = request.url,
+            time = new Date(request.timestamp);
+
+        url = '<mark>' + url.split('&').join('</mark><wbr />&amp;<mark>') + '</mark>';
+        url = url.replace('?','</mark>?<mark>');
+        url = url.replace(/%20/g,'&nbsp;');
+        url = url.replace(/%2C/g,',');
+        url = url.replace(/%3B/g,';');
+        url = url.replace(/%3D/g,'=');
+        url = url.replace(/undefined/g,'<span class="undefined">undefined</span>');
+
+        return [
+            '<li>',
+            '<a href="javascript://">',
+            '<time>',time.getDate(),'&nbsp;',time.getFullMonth(),'&nbsp;',time.getFullYear(),'&nbsp;',time.getHours(),':',time.getSeconds(),'</time>',
+            ':&nbsp;',
+            url,
+            '</a>',
+            '</li>'
+        ].join('');
     }
 
     function highlight(query){
@@ -57,8 +70,17 @@ FTACEDecode = (function () {
         });
     }
 
-    function zoomIn(item){
-        alert(item);
+    function zoomIn(prefix, item){
+        var output = [],
+            html = $(item),
+            title = $('time', html).eq(0).text();
+
+        html.find('mark').each(function(){
+            output.push("<tr><td>" + $(this).html().replace('=', '</td><td>') + "</td></tr>");
+        });
+
+        $('#'+prefix+'_link_decoder_view').html('<table>'+output.join('')+'</table>');
+        $('#'+prefix+'_link_decoder_view').dialog({width: '60%', title: title});
     }
 
     return {
@@ -68,16 +90,18 @@ FTACEDecode = (function () {
             $(document).ready(function(){
                 chrome.extension.sendMessage({}, function(ftace){
                     if($('#'+ftace.prefix+'_link_decoder').length === 0) {
-                        $(document.createElement('div')).attr('id', ftace.prefix+'_link_decoder').addClass(ftace.prefix).appendTo('body');
+                        $(document.createElement('div')).attr('id', ftace.prefix+'_link_decoder').attr('title','iJento Requests').appendTo('body');
+                        $(document.createElement('div')).attr('id', ftace.prefix+'_link_decoder_view').appendTo('body');
                         $('#'+ftace.prefix+'_link_decoder').html([
-                            '<a href="javascript:// Close" id="'+ftace.prefix+'_close">Close</a>',
                             '<form id="'+ftace.prefix+'_search">',
                             '<input type="search" placeholder="Enter a key to highlight e.g. &quot;sm&quot;" value="',ftace.user_data["decode.query"],'" />',
                             '</form>',
-                            '<h1>Requests</h1>',
-                            '<ol></ol>'
+                            '<div id="',ftace.prefix,'_tabs">',
+                            '<ul></ul>',
+                            '</div>'
                         ].join(''));
-                        $('#'+ftace.prefix+'_link_decoder').draggable({ handle : ':header' });
+
+                        $('#'+ftace.prefix+'_link_decoder').dialog({ width: '80%', height: 400, maxHeight: 600, position: "bottom left" });
 
                         $('#'+ftace.prefix+'_search').on('submit', function(event){
                             event.preventDefault();
@@ -87,45 +111,48 @@ FTACEDecode = (function () {
                             highlight(query);
                         });
 
-                        $('#'+ftace.prefix+'_close').on('click',function(event){
-                            event.preventDefault();
-                            $('#'+ftace.prefix+'_link_decoder').remove();
-                        });
+                        createTabs(ftace.prefix, ftace.network_requests);
+                        $('#'+ftace.prefix+'_link_decoder #'+ftace.prefix+'_tabs').tabs({active: -1});
                     }
 
 
-                    var networkRequests = ftace.network_requests;
-                    for(i=0;i<networkRequests.length;i++){
-                        newRequest(networkRequests[i]);
-                    }
 
                     if(ftace.user_data.hasOwnProperty("decode.query")){
                         highlight(ftace.user_data["decode.query"]);
                     }
 
-                    $('#'+ftace.prefix+'_link_decoder ol li a').on('click',function(){
-                        zoomIn(this);
+                    $('#'+ftace.prefix+'_link_decoder ol li a').on('click.'+ftace.prefix, function(event){
+                        event.preventDefault();
+                        zoomIn(ftace.prefix, this);
                     });
                 });
 
-                $(window).load(function(){
-                    chrome.extension.sendMessage({}, function(ftace){
-                        var networkRequests = ftace.network_requests;
-                        for(n=i;n<networkRequests.length;n++){
-                            newRequest(networkRequests[n]);
-                        }
+                /*$(window).load(function(){
+                 chrome.extension.sendMessage({}, function(ftace){
+                 var networkRequests = ftace.network_requests;
+                 for(n=i;n<networkRequests.length;n++){
+                 newRequest(networkRequests[n]);
+                 }
 
-                        if(ftace.user_data.hasOwnProperty("decode.query")){
-                            highlight(ftace.user_data["decode.query"]);
-                        }
-                    });
-                });
+                 if(ftace.user_data.hasOwnProperty("decode.query")){
+                 highlight(ftace.user_data["decode.query"]);
+                 }
+                 });
+
+                 $('#'+ftace.prefix+'_link_decoder ol li a').on('click',function(){
+                 zoomIn(this);
+                 });
+                 }); */
             });
         },
 
         stop : function(){
             chrome.extension.sendMessage({}, function(ftace){
+                $('#'+ftace.prefix+'_link_decoder ol li a').off('click');
+                $('#'+ftace.prefix+'_link_decoder').dialog("destroy");
                 $('#'+ftace.prefix+'_link_decoder').remove();
+                $('#'+ftace.prefix+'_link_decoder_view').dialog("destroy");
+                $('#'+ftace.prefix+'_link_decoder_view').remove();
             });
         },
 

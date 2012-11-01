@@ -86,7 +86,7 @@ FTAnalyticsChromeExtension.prototype.core = function(tab, callback){
 
     if(needs_loading){
         this.log('LOADER: Loading','Core');
-        chrome.tabs.insertCSS(tab, { file : "css/onscreen.css" })
+        chrome.tabs.insertCSS(tab, { file : "css/jquery-ui-1.9.1.custom.min.css" })
         chrome.tabs.executeScript(tab, { file : "js/core/extension.js" }, callback);
     }
     else {
