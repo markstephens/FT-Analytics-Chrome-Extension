@@ -1,6 +1,6 @@
 {
     "name": "FT Analytics",
-    "version": "0.1",
+    "version": "0.1.1",
     "manifest_version": 2,
     "description": "The FT Analytics Chrome Extension.",
 
