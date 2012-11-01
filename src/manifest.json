@@ -1,8 +1,8 @@
 {
-    "name": "FT Tracking",
+    "name": "FT Analytics",
     "version": "0.1",
     "manifest_version": 2,
-    "description": "The FT tracking extension.",
+    "description": "The FT Analytics Chrome Extension.",
 
     "icons": {
         "16":   "images/logo-16.png",
@@ -32,5 +32,5 @@
         "default_popup": "popup.html"
     },
 
-    "update_url": "http://git.svc.ft.com/raw/digipub%2Fft-analytics-chrome-extension.git/2929abda4bd23c93553b3778c3605e4bc4ae63f2%2Fupdates.xml"
+    "update_url": "http://git.svc.ft.com/raw/digipub%2Fft-analytics-chrome-extension.git/HEAD/updates.xml"
 }
