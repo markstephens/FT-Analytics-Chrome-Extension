@@ -15,6 +15,7 @@ FTAnalyticsChromeExtension.prototype.load = function(tab, module, callback){
                 // And Extension core.
                 self.core(tab, function(){
                     // Load module
+                    self.setLoaded(tab, module);
                     switch(module){
                         case 'position': self.position(tab, callback); break;
                         case 'data': self.data(tab, callback); break;
@@ -31,24 +32,30 @@ FTAnalyticsChromeExtension.prototype.load = function(tab, module, callback){
 
 FTAnalyticsChromeExtension.prototype.isLoaded = function(tab,module) {
     if(!this.loaded[tab]) {
+        return false;
+    }
+
+    if(this.loaded[tab].indexOf(module) < 0) {
+        return false;
+    }
+
+    return true;
+};
+
+FTAnalyticsChromeExtension.prototype.setLoaded = function(tab,module) {
+    if(!this.loaded[tab]) {
         this.loaded[tab] = [module];
 
-        this.log('LOADER: loaded', this.loaded);
-
-        return false;
+        return true;
     }
 
     if(this.loaded[tab].indexOf(module) < 0) {
         this.loaded[tab].push(module);
 
-        this.log('LOADER: loaded', this.loaded);
-
-        return false;
+        return true;
     }
 
-    this.log('LOADER: loaded', this.loaded);
-
-    return true;
+    return false;
 };
 
 FTAnalyticsChromeExtension.prototype.unload = function(tab, module){
@@ -58,7 +65,7 @@ FTAnalyticsChromeExtension.prototype.unload = function(tab, module){
 
     switch(module){
         case 'position':chrome.tabs.executeScript(null, { code : "FTACEPosition.stop();"}); break;
-        case 'data':  break;
+        case 'data': chrome.tabs.executeScript(null, { code : "FTACEData.stop();"}); break;
         case 'decode': chrome.tabs.executeScript(null, { code : "FTACEDecode.stop();"}); break;
     }
 }
@@ -70,6 +77,7 @@ FTAnalyticsChromeExtension.prototype.jquery = function(tab, callback){
     var needs_loading = !this.isLoaded(tab, 'jquery');
 
     if(needs_loading) {
+        this.setLoaded(tab,'jquery');
         this.log('LOADER: Loading','jQuery');
         chrome.tabs.executeScript(tab, { file : "js/core/jquery-1.8.2.min.js" }, callback);
         chrome.tabs.executeScript(tab, { file : "js/core/jquery-ui-1.9.1.custom.min.js" }, callback);
@@ -85,8 +93,9 @@ FTAnalyticsChromeExtension.prototype.core = function(tab, callback){
     var needs_loading = !this.isLoaded(tab, 'core');
 
     if(needs_loading){
+        this.setLoaded(tab,'core');
         this.log('LOADER: Loading','Core');
-        chrome.tabs.insertCSS(tab, { file : "css/jquery-ui-1.9.1.custom.min.css" })
+        chrome.tabs.insertCSS(tab, { file : "css/jquery-ui-1.9.1.custom.min.css" });
         chrome.tabs.executeScript(tab, { file : "js/core/extension.js" }, callback);
     }
     else {
@@ -107,7 +116,10 @@ FTAnalyticsChromeExtension.prototype.data = function(tab, callback){
     if (typeof callback === "undefined") { callback = function(){} }
     this.log('Loading','Data');
 
-    callback();
+    chrome.tabs.insertCSS(tab, { file : "css/data.css" });
+    chrome.tabs.executeScript(tab, { file : "js/data.js" }, function(){
+        chrome.tabs.executeScript(tab, { code : "FTACEData.init();"}, callback);
+    });
 }
 
 FTAnalyticsChromeExtension.prototype.decode = function(tab, callback){

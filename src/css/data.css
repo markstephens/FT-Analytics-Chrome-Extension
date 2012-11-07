@@ -1,0 +1,21 @@
+.FTACEData {
+    -webkit-transform-style: preserve-3d;
+    -webkit-perspective: 200px;
+}
+#FTACEDataWrapper {
+    outline: solid 1px #000;
+}
+#page-container {
+    -webkit-transition: -webkit-transform 2s;
+}
+#page-container.FTACEData {
+    z-index: 1;
+    -webkit-transform: rotateY(-20deg) rotateX(7deg) rotateZ(0deg);
+}
+a.FTACEData {
+    /*position: absolute;*/
+    z-index: 100;
+}
+div.FTACE.placeholder {
+    opacity: 0.3;
+}

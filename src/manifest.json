@@ -1,6 +1,6 @@
 {
     "name": "FT Analytics",
-    "version": "0.1.1",
+    "version": "0.1.0",
     "manifest_version": 2,
     "description": "The FT Analytics Chrome Extension.",
 
@@ -19,7 +19,10 @@
         "http://ft.com/",
         "http://www.ft.com/*",
         "http://search.ft.com/*",
-        "http://howtospendit.ft.com/*"
+        "http://howtospendit.ft.com/*",
+        "http://staging.howtospendit.ft.com/*",
+
+        "http://previewapp.labs.ft.com/*"
     ],
 
     "background": {

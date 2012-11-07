@@ -103,7 +103,7 @@ FTAnalyticsChromeExtension.prototype.storeNetworkRequest = function(tabid, reque
                 self.network_requests[tabid] = {};
             }
 
-            var home_re = /^http:\/\/www.ft.com\/home\//, title = tab.title, url = tab.url;
+            var home_re = /^http:\/\/www.ft.com\/home\//, title = tab.title, url = tab.url, ijHost = request.url.match(/^http:\/\/([\w\-\.]+)/);
 
             if(home_re.test(url)){
                 title = url.replace(home_re,'').toUpperCase() + " Home";
@@ -116,7 +116,7 @@ FTAnalyticsChromeExtension.prototype.storeNetworkRequest = function(tabid, reque
                 self.network_requests[tabid][url] = { title: title, requests: []};
             }
 
-            self.network_requests[tabid][url].requests.push({ timestamp:request.timeStamp, url:self.decodeIJentoRequest(request.url) });
+            self.network_requests[tabid][url].requests.push({ timestamp:request.timeStamp, url:self.decodeIJentoRequest(request.url), ijHost:ijHost[1] });
         })
     }
 };
