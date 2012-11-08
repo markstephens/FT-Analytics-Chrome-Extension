@@ -14,8 +14,8 @@ FTAnalyticsChromeExtension.prototype.load = function(tab, module, callback){
             self.jquery(tab, function(){
                 // And Extension core.
                 self.core(tab, function(){
-                    // Load module
                     self.setLoaded(tab, module);
+                    // Load module
                     switch(module){
                         case 'position': self.position(tab, callback); break;
                         case 'data': self.data(tab, callback); break;

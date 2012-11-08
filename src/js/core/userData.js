@@ -28,70 +28,43 @@ FTAnalyticsChromeExtension.prototype.getUserData = function(name) {
 
     return this.user_data;
 };
+
 FTAnalyticsChromeExtension.prototype.decodeIJentoRequest = function (url) {
-    function decode_base64(s) {
-        var e = {}, i, k, v = [], r = '', w = String.fromCharCode,
-            n = [
-                [65, 91],
-                [97, 123],
-                [48, 58],
-                [47, 48],
-                [43, 44]
-            ],
-            z, b = 0, c, x, l = 0, o;
+    //We get handed a string, assume that it is a fully formatted url
+    //We will regex out the value we are interested in
 
-        for (z in n) {
-            if (n.hasOwnProperty(z)) {
-                for (i = n[z][0]; i < n[z][1]; i += 1) {
-                    v.push(w(i));
-                }
-            }
-        }
-        for (i = 0; i < 64; i++) {
-            e[v[i]] = i;
-        }
+    var decodedUrl = {},
+        search = new RegExp(/(?:https?:\/\/)?[^?]*\?f=([^&]*)&d=([^ ]*)/im),
+        elements = search.exec(url),
+        //elements[1] is the value of the definition fields
+        //elements[2] is the data values
+        names = elements[1].split(""),
+        data = elements[2].replace(/#/g,"+").replace(/_/g,"=").split("*");
 
-        for (i = 0; i < s.length; i += 72) {
-            b = 0;
-            l = 0;
-            o = s.substring(i, i + 72);
-            for (x = 0; x < o.length; x++) {
-                c = e[o.charAt(x)];
-                b = (b << 6) + c;
-                l += 6;
-                while (l >= 8) {
-                    r += w((b >>> (l -= 8)) % 256);
-                }
-            }
-        }
-        return r;
+    // Base 64 Decode all the array elements
+    for (var i in data) {
+        decodedUrl[names[i]] = atob(data[i]);
     }
 
-    var d, c, arr, str, i;
+    /* KEYS
+     r: Referrer
+     p: Request
+     d: Additional data (screen res/Java enabled)
+     c: Cookie
+     u: Pseudo random number to bypass caching
+     t: External click id
+     f: Tracert path
+     q: Tracer query data
+     g: Tag data
+     w: Is cookie new
+     y: Tag Type
+     o: Index
+     otherwise: Empty field
+     */
 
-    d = url.split("&d=")[1];
-    if(typeof d == "undefined"){
-        return url;
-    }
-    c = d.split("&c=")[0];
+    this.log('decodedUrl',decodedUrl)
 
-    c.replace("#", "+");
-    c.replace("_", "=");
-    arr = c.split("*");
-
-    str = "";
-
-    for (i = 0; i < arr.length; i++) {
-        str += decode_base64(arr[i]) + ";";
-    }
-
-    str = encodeURIComponent(str).replace(/%00/g, "");
-    str = decodeURIComponent(str);
-    str = str.substring(0, str.length - 1);
-    /*if (window.console && console.log) {
-     console.log(str.replace(/;+/g, "\n"));
-     }*/
-    return str;
+    return decodedUrl;
 };
 
 FTAnalyticsChromeExtension.prototype.storeNetworkRequest = function(tabid, request) {
@@ -120,6 +93,7 @@ FTAnalyticsChromeExtension.prototype.storeNetworkRequest = function(tabid, reque
         })
     }
 };
+
 FTAnalyticsChromeExtension.prototype.getNetworkRequests = function(tabid) {
     if(this.network_requests.hasOwnProperty(tabid)) {
         return this.network_requests[tabid];

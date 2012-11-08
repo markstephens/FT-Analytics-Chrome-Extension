@@ -30,39 +30,110 @@ if(typeof(FTACEDecode)==="undefined"){
     var FTACEDecode = (function () {
         'use strict';
 
-        function createTabs(prefix, allRequests){
-            $.each(allRequests, function(url, details){
+        var lastUpdate = new Date(0),
+            prefix,
+            allRequests,
+            userData;
 
-                var items = [], id = prefix + '_' + url.replace(/\W+/g, '').toLowerCase();
+        //  One time only
+        function createInterface(){
+            $(document.createElement('div')).attr('id', prefix+'_link_decoder').attr('title','iJento Requests').appendTo('body');
+            $(document.createElement('div')).attr('id', prefix+'_link_decoder_view').appendTo('body');
+            $('#'+prefix+'_link_decoder').html([
+                '<div id="',prefix,'_tabs">',
+                '<ul></ul>',
+                '</div>'
+            ].join(''));
+
+            $('#'+prefix+'_link_decoder').dialog({ width: '80%', height: 400, maxHeight: 600, position: "bottom left" });
+
+            $('#'+prefix+'_link_decoder').prev().append(['<form id="'+prefix+'_search">',
+                '<input type="search" placeholder="Enter a key to highlight e.g. &quot;sm&quot;" value="',userData["decode.query"],'" />',
+                '</form>'].join(''));
+
+            $('#'+prefix+'_search').on('submit', function(event){
+                event.preventDefault();
+
+                var query = $('#'+prefix+'_search input').eq(0).val();
+                chrome.storage.sync.set({"decode.query" : query });
+                highlight(query);
+            });
+
+            $.each(allRequests, function(url, details){
+                var id = prefix + '_' + url.replace(/\W+/g, '').toLowerCase();
 
                 $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul').append('<li data-active="' + (url == document.location) + '"><a href="#'+id+'" title="'+details.title+' ('+url+')"><span>'+details.title+'</span></a></li>');
+                $('#'+prefix+'_link_decoder #'+prefix+'_tabs').append('<div id="'+id+'"><ol></ol></div>');
+            });
 
-                for(var i=0;i<details.requests.length;i++){
-                    items.push(newRequest(details.requests[i]));
-                }
+            $('#'+prefix+'_link_decoder #'+prefix+'_tabs').tabs({active:-1});
 
-                $('#'+prefix+'_link_decoder #'+prefix+'_tabs').append('<div id="'+id+'"><ol>'+items.join('')+'</ol></div>');
+            if(userData.hasOwnProperty("decode.query")){
+                highlight(userData["decode.query"]);
+            }
+
+            $('#'+prefix+'_link_decoder ol li a').on('click.'+prefix, function(event){
+                event.preventDefault();
+                zoomIn(this);
             });
         }
 
-        function newRequest(request){
-            var url = request.url,
-                time = new Date(request.timestamp);
+        function addRequests() {
+            $.each(allRequests, function(pageUrl, details){
+                var items = [],
+                    id = prefix + '_' + pageUrl.replace(/\W+/g, '').toLowerCase(),
+                    request;
 
-            url = '<mark>' + url.split('&').join('</mark><wbr />&amp;<mark>') + '</mark>';
-            url = url.replace("?",'</mark>?<mark>');
-            url = url.replace(/%20/g,'&nbsp;');
-            url = url.replace(/%2C/g,',');
-            url = url.replace(/%3B/g,';');
-            url = url.replace(/%3D/g,'=');
-            url = url.replace(/undefined/g,'<span class="undefined">undefined</span>');
+                for(var i=0;i<details.requests.length;i++){
+                    request = details.requests[i];
+
+                    if(new Date(request.timestamp) > lastUpdate) {
+                        items.push(buildRequest(pageUrl, request));
+                    }
+                }
+
+                console.log(items);
+
+                lastUpdate = new Date(request.timestamp);
+
+                $('#'+prefix+'_link_decoder #'+prefix+'_tabs #'+id+' ol').append(items.join(''));
+            });
+
+            $('#'+prefix+'_link_decoder #'+prefix+'_tabs').tabs( "option", "active", $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul li[data-active=true]').index());
+        }
+
+        function markupUrl(url, row, column) {
+            if(typeof url !== "undefined") {
+                if(typeof row === "undefined") { row = "mark"; }
+                if(typeof column === "undefined") { column = "mark"; }
+
+                url = '<'+row+'>' + url.split('&').join('</'+column+'><wbr />&amp;<'+column+'>') + '</'+row+'>';
+                url = url.replace("?",'</'+row+'>?<'+row+'>');
+                url = url.replace(/%20/g,'&nbsp;');
+                url = url.replace(/%2C/g,',');
+                url = url.replace(/%3B/g,';');
+                url = url.replace(/%3D/g,'=');
+                url = url.replace(/undefined/g,'<span class="undefined">undefined</span>');
+
+                return url;
+            }
+        }
+
+        function buildRequest(pageUrl, request) {
+            var url = request.url, time = new Date(request.timestamp), fullUrl=[];
+
+            $.each(url,function(key,val){
+               fullUrl.push(val);
+            });
+
+            fullUrl = markupUrl(fullUrl.join('&'));
 
             return [
                 '<li>',
-                '<a href="javascript://">',
+                '<a href="javascript://" data-key="',pageUrl,'" data-p="',request.url.p,'">',
                 '<time title="',request.ijHost,'">',time.getDate(),'&nbsp;',time.getFullMonth(),'&nbsp;',time.getFullYear(),'&nbsp;',time.getHours(),':',time.getFullMinutes(),'</time>',
                 ':&nbsp;',
-                url,
+                fullUrl,
                 '</a>',
                 '</li>'
             ].join('');
@@ -71,27 +142,57 @@ if(typeof(FTACEDecode)==="undefined"){
         function highlight(query){
             if(typeof query === "undefined"){ query = ""; }
 
-            chrome.extension.sendMessage({}, function(ftace){
-                $('#'+ftace.prefix+'_link_decoder ol li mark').removeClass('searchresult');
+            $('#'+prefix+'_link_decoder ol li mark').removeClass('searchresult');
 
-                if(query !== ""){
-                    $('#'+ftace.prefix+'_link_decoder ol li mark:contains('+ query +')').addClass('searchresult');
-                }
-            });
+            if(query !== ""){
+                $('#'+prefix+'_link_decoder ol li mark:contains('+ query +')').addClass('searchresult');
+            }
         }
 
-        function zoomIn(prefix, item){
+        function zoomIn(item){
             var output = [],
-                html = $(item),
-                titleEl = $('time', html).eq(0),
-                title = titleEl.text() + ' <span style="margin-left:2em">(' + titleEl.attr('title') + ')</span>';
+                $item = $(item),
+                data;
 
-            html.find('mark').each(function(){
-                output.push("<tr><td>" + $(this).html().replace('=', '</td><td>') + "</td></tr>");
+            $.each(allRequests[$item.data('key')], function(request){
+                if(request.url.p == $item.data('p')){
+                    data = request;
+                    return false;
+                }
+            });
+
+            if(typeof data === "undefined") {
+                alert("Something went wrong. Couldn't locate request.");
+                return false;
+            }
+
+            var url = data.url.p;
+            delete data.url.p;
+
+            output.push(markupUrl(url,'tr','td').replace('=', '</td><td>'));
+
+            $.each(data.url, function(key,val){
+                var label;
+                switch (key) {
+                    case 'r': label = "Referrer"; break;
+                    case 'p': label = "Request"; break;
+                    case 'd': label = "Additional data (screen res/Java enabled)"; break;
+                    case 'c': label = "Cookie"; break;
+                    case 'u': label = "Pseudo random number to bypass caching"; break;
+                    case 't': label = "External click id"; break;
+                    case 'f': label = "Tracert path"; break;
+                    case 'q': label = "Tracer query data"; break;
+                    case 'g': label = "Tag data"; break;
+                    case 'w': label = "Is cookie new"; break;
+                    case 'y': label = "Tag Type"; break;
+                    default: label = "Empty field"; break;
+                }
+
+                output.push('<tr><td>'+label+' ('+key+')</td><td>'+val+'</td></tr>');
             });
 
             $('#'+prefix+'_link_decoder_view').html('<table>'+output.join('')+'</table>');
-            $('#'+prefix+'_link_decoder_view').dialog({width: '60%', title: title});
+            $('#'+prefix+'_link_decoder_view').dialog({width: '60%', title: data.timeStamp + ' ('+data.ijHost+')'});
         }
 
         return {
@@ -99,40 +200,13 @@ if(typeof(FTACEDecode)==="undefined"){
                 var i,n;
 
                 $(document).ready(function(){
-                    chrome.extension.sendMessage({}, function(ftace){
-                        $(document.createElement('div')).attr('id', ftace.prefix+'_link_decoder').attr('title','iJento Requests').appendTo('body');
-                        $(document.createElement('div')).attr('id', ftace.prefix+'_link_decoder_view').appendTo('body');
-                        $('#'+ftace.prefix+'_link_decoder').html([
-                            '<div id="',ftace.prefix,'_tabs">',
-                            '<ul></ul>',
-                            '</div>'
-                        ].join(''));
+                    chrome.extension.sendMessage({}, function(ftace) {
+                        prefix = ftace.prefix;
+                        allRequests = ftace.network_requests;
+                        userData = ftace.user_data;
 
-                        $('#'+ftace.prefix+'_link_decoder').dialog({ width: '80%', height: 400, maxHeight: 600, position: "bottom left" });
-
-                        $('#FTACE_link_decoder').prev().append(['<form id="'+ftace.prefix+'_search">',
-                            '<input type="search" placeholder="Enter a key to highlight e.g. &quot;sm&quot;" value="',ftace.user_data["decode.query"],'" />',
-                            '</form>'].join(''));
-
-                        $('#'+ftace.prefix+'_search').on('submit', function(event){
-                            event.preventDefault();
-
-                            var query = $('#'+ftace.prefix+'_search input').eq(0).val();
-                            chrome.storage.sync.set({"decode.query" : query });
-                            highlight(query);
-                        });
-
-                        createTabs(ftace.prefix, ftace.network_requests);
-                        $('#'+ftace.prefix+'_link_decoder #'+ftace.prefix+'_tabs').tabs({active: $('#'+ftace.prefix+'_link_decoder #'+ftace.prefix+'_tabs ul li[data-active=true]').index()});
-
-                        if(ftace.user_data.hasOwnProperty("decode.query")){
-                            highlight(ftace.user_data["decode.query"]);
-                        }
-
-                        $('#'+ftace.prefix+'_link_decoder ol li a').on('click.'+ftace.prefix, function(event){
-                            event.preventDefault();
-                            zoomIn(ftace.prefix, this);
-                        });
+                        createInterface();
+                        addRequests();
                     });
 
                     /*
@@ -157,6 +231,8 @@ if(typeof(FTACEDecode)==="undefined"){
             },
 
             stop : function(){
+                lastUpdate = new Date(0);
+
                 chrome.extension.sendMessage({}, function(ftace){
                     $('#'+ftace.prefix+'_link_decoder ol li a').off('click');
                     $('#'+ftace.prefix+'_link_decoder').dialog("destroy");
