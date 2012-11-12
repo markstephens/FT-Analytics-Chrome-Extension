@@ -19,6 +19,7 @@
         "http://ft.com/",
         "http://www.ft.com/*",
         "http://search.ft.com/*",
+        "http://video.ft.com/*",
         "http://howtospendit.ft.com/*",
         "http://staging.howtospendit.ft.com/*",
 

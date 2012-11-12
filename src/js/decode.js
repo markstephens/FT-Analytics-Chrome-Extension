@@ -1,6 +1,4 @@
-/*global FT*/
-
-if(typeof(FTACEDecode)==="undefined"){
+if(typeof(ftaceDecode)==="undefined"){
 
     Date.prototype.getFullMonth = function(){
         switch(this.getMonth()){
@@ -27,10 +25,11 @@ if(typeof(FTACEDecode)==="undefined"){
         return m;
     };
 
-    var FTACEDecode = (function () {
+    var ftaceDecode = (function () {
         'use strict';
 
-        var lastUpdate = new Date(0),
+        var tabs,
+            lastUpdate = new Date(0),
             prefix,
             allRequests,
             userData;
@@ -62,78 +61,117 @@ if(typeof(FTACEDecode)==="undefined"){
             $.each(allRequests, function(url, details){
                 var id = prefix + '_' + url.replace(/\W+/g, '').toLowerCase();
 
-                $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul').append('<li data-active="' + (url == document.location) + '"><a href="#'+id+'" title="'+details.title+' ('+url+')"><span>'+details.title+'</span></a></li>');
+                $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul').append('<li data-active="' + (url == document.location) + '"><a href="#'+id+'" title="'+details.title+' ('+url+')"><span>'+details.title+'</span></a><span class="ui-icon ui-icon-close">Remove Tab</span></li>');
                 $('#'+prefix+'_link_decoder #'+prefix+'_tabs').append('<div id="'+id+'"><ol></ol></div>');
             });
 
-            $('#'+prefix+'_link_decoder #'+prefix+'_tabs').tabs({active:-1});
+            tabs = $('#'+prefix+'_link_decoder #'+prefix+'_tabs').tabs({active:-1});
 
-            if(userData.hasOwnProperty("decode.query")){
-                highlight(userData["decode.query"]);
-            }
-
-            $('#'+prefix+'_link_decoder ol li a').on('click.'+prefix, function(event){
+            $('#'+prefix+'_link_decoder ol li a').live('click.'+prefix, function(event){
                 event.preventDefault();
                 zoomIn(this);
+            });
+
+            // close icon: removing the tab on click
+            $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul span.ui-icon-close').live('click.'+prefix, function() {
+                var panelId = $( this ).closest( "li" ).remove().attr( "aria-controls" );
+                $( "#" + panelId ).remove();
+                // TODO Remove data
+                tabs.tabs( "refresh" );
             });
         }
 
         function addRequests() {
-            $.each(allRequests, function(pageUrl, details){
-                var items = [],
-                    id = prefix + '_' + pageUrl.replace(/\W+/g, '').toLowerCase(),
-                    request;
+            chrome.extension.sendMessage({}, function(ftace) {
+                allRequests = ftace.network_requests;
 
-                for(var i=0;i<details.requests.length;i++){
-                    request = details.requests[i];
+                $.each(allRequests, function(pageUrl, details){
+                    var items = [],
+                        id = prefix + '_' + pageUrl.replace(/\W+/g, '').toLowerCase(),
+                        requests = details.requests,
+                        request,
+                        i;
 
-                    if(new Date(request.timestamp) > lastUpdate) {
-                        items.push(buildRequest(pageUrl, request));
+                    if(requests.length > 0){
+                        for(i=0;i<requests.length;i++){
+                            request = requests[i];
+
+                            if(new Date(request.timestamp) > lastUpdate) {
+                                items.push(buildRequest(pageUrl, request));
+                            }
+                        }
+
+                        lastUpdate = new Date(request.timestamp);
+
+                        if(items.length > 0){
+                            $('#'+prefix+'_link_decoder #'+prefix+'_tabs #'+id+' ol').append(items.join(''));
+
+                            if(userData.hasOwnProperty("decode.query")){
+                                highlight(userData["decode.query"]);
+                            }
+                        }
+                    }
+                });
+
+                $('#'+prefix+'_link_decoder #'+prefix+'_tabs').tabs( "option", "active", $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul li[data-active=true]').index());
+            });
+        }
+
+        function splitUrl(url) {
+            if(typeof url === "undefined") {
+                return {};
+            }
+
+            var i,n,key,urlPart,parts,kv;
+
+            for(i in url) {
+                key = url[i][0];
+                urlPart = url[i][1].replace(/%3D/g,'=');
+                parts = urlPart.split(/[&\?]/g);
+
+                for(n in parts) {
+                    kv = parts[n].split("=");
+
+                    if (typeof kv[1] === "undefined") {
+                        parts[n] = [kv[0]];
+                    }
+                    else {
+                        parts[n] = [
+                            kv[0],
+                            kv[1].replace(/%20/g,'&nbsp;').replace(/%3B/g,';').replace(/%2C/g,',').replace(/undefined/g,'<span class="undefined">undefined</span>')
+                        ];
                     }
                 }
 
-                console.log(items);
-
-                lastUpdate = new Date(request.timestamp);
-
-                $('#'+prefix+'_link_decoder #'+prefix+'_tabs #'+id+' ol').append(items.join(''));
-            });
-
-            $('#'+prefix+'_link_decoder #'+prefix+'_tabs').tabs( "option", "active", $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul li[data-active=true]').index());
-        }
-
-        function markupUrl(url, row, column) {
-            if(typeof url !== "undefined") {
-                if(typeof row === "undefined") { row = "mark"; }
-                if(typeof column === "undefined") { column = "mark"; }
-
-                url = '<'+row+'>' + url.split('&').join('</'+column+'><wbr />&amp;<'+column+'>') + '</'+row+'>';
-                url = url.replace("?",'</'+row+'>?<'+row+'>');
-                url = url.replace(/%20/g,'&nbsp;');
-                url = url.replace(/%2C/g,',');
-                url = url.replace(/%3B/g,';');
-                url = url.replace(/%3D/g,'=');
-                url = url.replace(/undefined/g,'<span class="undefined">undefined</span>');
-
-                return url;
+                url[i][1] = parts;
             }
+
+            return url;
         }
 
         function buildRequest(pageUrl, request) {
-            var url = request.url, time = new Date(request.timestamp), fullUrl=[];
+            var url = [],
+                u = splitUrl(request.url),
+                time = new Date(request.timestamp),
+                html = [],
+                domain;
 
-            $.each(url,function(key,val){
-               fullUrl.push(val);
+            $.each(u,function(key,urlParts){
+                url = url.concat(urlParts[1]);
             });
 
-            fullUrl = markupUrl(fullUrl.join('&'));
+            $.each(url, function(i,urlParts){
+                html.push('<mark>' + urlParts.join('=') + '</mark>');
+            });
+
+            domain = html.shift();
 
             return [
                 '<li>',
-                '<a href="javascript://" data-key="',pageUrl,'" data-p="',request.url.p,'">',
+                '<a href="javascript://" data-key="',pageUrl,'" data-timestamp="',request.timestamp,'">',
                 '<time title="',request.ijHost,'">',time.getDate(),'&nbsp;',time.getFullMonth(),'&nbsp;',time.getFullYear(),'&nbsp;',time.getHours(),':',time.getFullMinutes(),'</time>',
                 ':&nbsp;',
-                fullUrl,
+                domain , '?' , html.join('<wbr />&amp;'),
                 '</a>',
                 '</li>'
             ].join('');
@@ -152,10 +190,11 @@ if(typeof(FTACEDecode)==="undefined"){
         function zoomIn(item){
             var output = [],
                 $item = $(item),
+                details = allRequests[$item.data('key')],
                 data;
 
-            $.each(allRequests[$item.data('key')], function(request){
-                if(request.url.p == $item.data('p')){
+            $.each(details.requests, function(i,request){
+                if(request.timestamp == $item.data('timestamp')){
                     data = request;
                     return false;
                 }
@@ -166,13 +205,10 @@ if(typeof(FTACEDecode)==="undefined"){
                 return false;
             }
 
-            var url = data.url.p;
-            delete data.url.p;
+            var time = new Date(data.timestamp);
 
-            output.push(markupUrl(url,'tr','td').replace('=', '</td><td>'));
-
-            $.each(data.url, function(key,val){
-                var label;
+            $.each(data.url, function(key,urlPart){
+                var label, key=urlPart[0], val=urlPart[1];
                 switch (key) {
                     case 'r': label = "Referrer"; break;
                     case 'p': label = "Request"; break;
@@ -192,13 +228,11 @@ if(typeof(FTACEDecode)==="undefined"){
             });
 
             $('#'+prefix+'_link_decoder_view').html('<table>'+output.join('')+'</table>');
-            $('#'+prefix+'_link_decoder_view').dialog({width: '60%', title: data.timeStamp + ' ('+data.ijHost+')'});
+            $('#'+prefix+'_link_decoder_view').dialog({width: '60%', title: time + ' ('+data.ijHost+')'});
         }
 
         return {
             init : function() {
-                var i,n;
-
                 $(document).ready(function(){
                     chrome.extension.sendMessage({}, function(ftace) {
                         prefix = ftace.prefix;
@@ -208,25 +242,6 @@ if(typeof(FTACEDecode)==="undefined"){
                         createInterface();
                         addRequests();
                     });
-
-                    /*
-                     TODO WEBAPP IS A GOOD WAY TO TEST THIS
-                     $(window).load(function(){
-                     chrome.extension.sendMessage({}, function(ftace){
-                     var networkRequests = ftace.network_requests;
-                     for(n=i;n<networkRequests.length;n++){
-                     newRequest(networkRequests[n]);
-                     }
-
-                     if(ftace.user_data.hasOwnProperty("decode.query")){
-                     highlight(ftace.user_data["decode.query"]);
-                     }
-                     });
-
-                     $('#'+ftace.prefix+'_link_decoder ol li a').on('click',function(){
-                     zoomIn(this);
-                     });
-                     }); */
                 });
             },
 
@@ -235,7 +250,6 @@ if(typeof(FTACEDecode)==="undefined"){
 
                 chrome.extension.sendMessage({}, function(ftace){
                     $('#'+ftace.prefix+'_link_decoder ol li a').off('click');
-                    $('#'+ftace.prefix+'_link_decoder').dialog("destroy");
                     $('#'+ftace.prefix+'_link_decoder').remove();
                     $('#'+ftace.prefix+'_link_decoder_view').remove();
                 });

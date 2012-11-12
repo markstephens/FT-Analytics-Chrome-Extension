@@ -1,5 +1,5 @@
-if(typeof(FTACEData)==="undefined"){
-    var FTACEData = (function(){
+if(typeof(ftaceData)==="undefined"){
+    var ftaceData = (function(){
         var userTypes;
 
         return {

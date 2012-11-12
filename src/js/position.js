@@ -1,5 +1,5 @@
-if(typeof(FTACEPosition)==="undefined"){
-    var FTACEPosition = (function(){
+if(typeof(ftacePosition)==="undefined"){
+    var ftacePosition = (function(){
 
         var $colors = ['#090', '#00F', '#F90', '#F0F', '#099', '#666', '#000'],
             $increment = 0,

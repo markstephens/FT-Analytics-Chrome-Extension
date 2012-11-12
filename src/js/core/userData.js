@@ -29,21 +29,68 @@ FTAnalyticsChromeExtension.prototype.getUserData = function(name) {
     return this.user_data;
 };
 
+FTAnalyticsChromeExtension.prototype.base64_decode = function(s) {
+    try {
+        return atob(s);
+    }
+    catch (exception) {
+        return s;
+    }
+    /*
+    var e = {}, i, k, v = [], r = '', w = String.fromCharCode,
+        n = [
+            [65, 91],
+            [97, 123],
+            [48, 58],
+            [47, 48],
+            [43, 44]
+        ],
+        z, b = 0, c, x, l = 0, o;
+
+    for (z in n) {
+        if (n.hasOwnProperty(z)) {
+            for (i = n[z][0]; i < n[z][1]; i += 1) {
+                v.push(w(i));
+            }
+        }
+    }
+    for (i = 0; i < 64; i++) {
+        e[v[i]] = i;
+    }
+
+    for (i = 0; i < s.length; i += 72) {
+        b = 0;
+        l = 0;
+        o = s.substring(i, i + 72);
+        for (x = 0; x < o.length; x++) {
+            c = e[o.charAt(x)];
+            b = (b << 6) + c;
+            l += 6;
+            while (l >= 8) {
+                r += w((b >>> (l -= 8)) % 256);
+            }
+        }
+    }
+    return r;
+    */
+};
+
 FTAnalyticsChromeExtension.prototype.decodeIJentoRequest = function (url) {
     //We get handed a string, assume that it is a fully formatted url
     //We will regex out the value we are interested in
 
-    var decodedUrl = {},
+    var decodedUrl = [],
         search = new RegExp(/(?:https?:\/\/)?[^?]*\?f=([^&]*)&d=([^ ]*)/im),
         elements = search.exec(url),
         //elements[1] is the value of the definition fields
         //elements[2] is the data values
         names = elements[1].split(""),
-        data = elements[2].replace(/#/g,"+").replace(/_/g,"=").split("*");
+        data = elements[2].replace(/#/g,"+").replace(/_/g,"=").split("*"),
+        i;
 
     // Base 64 Decode all the array elements
-    for (var i in data) {
-        decodedUrl[names[i]] = atob(data[i]);
+    for (i=0;i<data.length;i++) {
+        decodedUrl.push([names[i], this.base64_decode(data[i])]);
     }
 
     /* KEYS

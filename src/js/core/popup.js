@@ -16,6 +16,7 @@ chrome.tabs.getSelected(null, function(tab) {
         var input = $(this),
             name = input.attr('name');
 
+        console.log('clicked');
 
         if(input.is(":checked")){
             input.after('<img src="images/loading.gif" alt="" class="loading '+name+'" />')
