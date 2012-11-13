@@ -19,3 +19,7 @@ a.FTACEData {
 div.FTACE.placeholder {
     opacity: 0.3;
 }
+span.ftacedata {
+    color: #0F0;
+    text-shadow: 1px 1px 1px #666;
+}
