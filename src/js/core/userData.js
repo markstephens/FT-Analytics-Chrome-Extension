@@ -148,3 +148,19 @@ FTAnalyticsChromeExtension.prototype.getNetworkRequests = function(tabid) {
 
     return [];
 };
+
+FTAnalyticsChromeExtension.prototype.clearNetworkRequests = function(tabid, url) {
+    this.log('CLEAR NETWORK REQs', tabid, url);
+
+    if(typeof tabid === "undefined"){
+        this.network_requests = {};
+    }
+    else {
+        if(typeof url === "undefined"){
+            this.network_requests[tabid] = {};
+        }
+        else {
+             delete this.network_requests[tabid][url];
+        }
+    }
+};

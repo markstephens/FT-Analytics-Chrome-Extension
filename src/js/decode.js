@@ -61,7 +61,7 @@ if(typeof(ftaceDecode)==="undefined"){
             $.each(allRequests, function(url, details){
                 var id = prefix + '_' + url.replace(/\W+/g, '').toLowerCase();
 
-                $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul').append('<li data-active="' + (url == document.location) + '"><a href="#'+id+'" title="'+details.title+' ('+url+')"><span>'+details.title+'</span></a><span class="ui-icon ui-icon-close">Remove Tab</span></li>');
+                $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul').append('<li data-active="' + (url == document.location) + '"><a href="#'+id+'" title="'+details.title+' ('+url+')"><span>'+details.title+'</span></a><span class="ui-icon ui-icon-close" data-url="'+url+'">Remove Tab</span></li>');
                 $('#'+prefix+'_link_decoder #'+prefix+'_tabs').append('<div id="'+id+'"><ol></ol></div>');
             });
 
@@ -74,10 +74,12 @@ if(typeof(ftaceDecode)==="undefined"){
 
             // close icon: removing the tab on click
             $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul span.ui-icon-close').live('click.'+prefix, function() {
-                var panelId = $( this ).closest( "li" ).remove().attr( "aria-controls" );
-                $( "#" + panelId ).remove();
+                var panelId = $(this).closest("li").remove().attr("aria-controls");
+                $("#" + panelId).remove();
                 // TODO Remove data
-                tabs.tabs( "refresh" );
+                chrome.extension.sendMessage({ type: 'clearNetworkTabUrl', url: $(this).data('url') }, function(){
+                    tabs.tabs("refresh");
+                });
             });
         }
 
@@ -208,26 +210,40 @@ if(typeof(ftaceDecode)==="undefined"){
             var time = new Date(data.timestamp);
 
             $.each(data.url, function(key,urlPart){
-                var label, key=urlPart[0], val=urlPart[1];
-                switch (key) {
-                    case 'r': label = "Referrer"; break;
-                    case 'p': label = "Request"; break;
-                    case 'd': label = "Additional data (screen res/Java enabled)"; break;
-                    case 'c': label = "Cookie"; break;
-                    case 'u': label = "Pseudo random number to bypass caching"; break;
-                    case 't': label = "External click id"; break;
-                    case 'f': label = "Tracert path"; break;
-                    case 'q': label = "Tracer query data"; break;
-                    case 'g': label = "Tag data"; break;
-                    case 'w': label = "Is cookie new"; break;
-                    case 'y': label = "Tag Type"; break;
-                    default: label = "Empty field"; break;
-                }
+                var label, key=urlPart[0], values=urlPart[1];
 
-                output.push('<tr><td>'+label+' ('+key+')</td><td>'+val+'</td></tr>');
+                if(key && values.length > 0) {
+                    switch (key) {
+                        case 'r': label = "Referrer"; break;
+                        case 'p': label = "Request"; break;
+                        case 'd': label = "Additional data (screen res/Java enabled)"; break;
+                        case 'c': label = "Cookie"; break;
+                        case 'u': label = "Pseudo random number to bypass caching"; break;
+                        case 't': label = "External click id"; break;
+                        case 'f': label = "Tracert path"; break;
+                        case 'q': label = "Tracer query data"; break;
+                        case 'g': label = "Tag data"; break;
+                        case 'w': label = "Is cookie new"; break;
+                        case 'y': label = "Tag Type"; break;
+                        default: label = "Empty field"; break;
+                    }
+
+                    output.push('<tr><th colspan="2">'+label+' ('+key+')</th></tr>');
+                    $.each(values,function(i, value){
+                        var k = value[0], v = value[1];
+                        if(k){
+                            if(typeof v === "undefined") {
+                                output.push('<tr><td colspan="2">'+k+'</td></tr>');
+                            }
+                            else {
+                                output.push('<tr><td>'+k+'</td><td>'+v+'</td></tr>');
+                            }
+                        }
+                    });
+                }
             });
 
-            $('#'+prefix+'_link_decoder_view').html('<table>'+output.join('')+'</table>');
+            $('#'+prefix+'_link_decoder_view').html('<table><colgroup><col width="1" /><col width="*" /></colgroup>'+output.join('')+'</table>');
             $('#'+prefix+'_link_decoder_view').dialog({width: '60%', title: time + ' ('+data.ijHost+')'});
         }
 

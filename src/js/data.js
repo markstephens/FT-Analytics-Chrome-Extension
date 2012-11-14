@@ -48,7 +48,7 @@ if(typeof(ftaceData)==="undefined"){
 
             stop : function(){
                 chrome.extension.sendMessage({}, function(ftace){
-
+                    $('span.'+ftace.prefix+'data').remove();
                 });
             }
         }

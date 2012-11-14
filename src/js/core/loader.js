@@ -74,7 +74,10 @@ FTAnalyticsChromeExtension.prototype.unload = function(tab, module){
     switch(module){
         case 'position':chrome.tabs.executeScript(null, { code : "ftacePosition.stop();"}); break;
         case 'data': chrome.tabs.executeScript(null, { code : "ftaceData.stop();"}); break;
-        case 'decode': chrome.tabs.executeScript(null, { code : "ftaceDecode.stop();"}); break;
+        case 'decode': chrome.tabs.executeScript(null, { code : "ftaceDecode.stop();"});
+            // If actually turning off, clear out the data.
+            this.clearNetworkRequests();
+            break;
     }
 }
 

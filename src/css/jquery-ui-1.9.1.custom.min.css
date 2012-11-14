@@ -55,6 +55,15 @@
 #FTACE_link_decoder #FTACE_tabs ol li a:hover mark.searchresult:hover, #FTACE_link_decoder_view mark.searchresult:hover {
     background: #F83;
 }
-#FTACE_link_decoder_view tr {
+#FTACE_link_decoder_view table {
+    width: 95%;
+    /*border-collapse: collapse;*/
+}
+#FTACE_link_decoder_view tr th {
+    text-align: left;
+    background: #666;
+    color: #FFF;
+}
+#FTACE_link_decoder_view tr td {
     font-family: 'Courier New';
 }
