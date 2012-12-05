@@ -29,10 +29,11 @@ if(typeof(ftaceDecode)==="undefined"){
         'use strict';
 
         var tabs,
-            lastUpdate = new Date(0),
+            lastUpdate = {},
             prefix,
             allRequests,
-            userData;
+            userData,
+            updateInterval;
 
         //  One time only
         function createInterface(){
@@ -60,6 +61,7 @@ if(typeof(ftaceDecode)==="undefined"){
 
             $.each(allRequests, function(url, details){
                 var id = prefix + '_' + url.replace(/\W+/g, '').toLowerCase();
+                lastUpdate[url] = new Date(0); // Set default last update.
 
                 $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul').append('<li data-active="' + (url == document.location) + '"><a href="#'+id+'" title="'+details.title+' ('+url+')"><span>'+details.title+'</span></a><span class="ui-icon ui-icon-close" data-url="'+url+'">Remove Tab</span></li>');
                 $('#'+prefix+'_link_decoder #'+prefix+'_tabs').append('<div id="'+id+'"><ol></ol></div>');
@@ -83,7 +85,9 @@ if(typeof(ftaceDecode)==="undefined"){
             });
         }
 
-        function addRequests() {
+        function addRequests(callback) {
+            if(typeof callback === "undefined") callback = function(){};
+
             chrome.extension.sendMessage({}, function(ftace) {
                 allRequests = ftace.network_requests;
 
@@ -98,12 +102,12 @@ if(typeof(ftaceDecode)==="undefined"){
                         for(i=0;i<requests.length;i++){
                             request = requests[i];
 
-                            if(new Date(request.timestamp) > lastUpdate) {
+                            if(new Date(request.timestamp) > lastUpdate[pageUrl]) {
                                 items.push(buildRequest(pageUrl, request));
                             }
                         }
 
-                        lastUpdate = new Date(request.timestamp);
+                        lastUpdate[pageUrl] = new Date(request.timestamp);
 
                         if(items.length > 0){
                             $('#'+prefix+'_link_decoder #'+prefix+'_tabs #'+id+' ol').append(items.join(''));
@@ -115,7 +119,7 @@ if(typeof(ftaceDecode)==="undefined"){
                     }
                 });
 
-                $('#'+prefix+'_link_decoder #'+prefix+'_tabs').tabs( "option", "active", $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul li[data-active=true]').index());
+                callback();
             });
         }
 
@@ -140,7 +144,7 @@ if(typeof(ftaceDecode)==="undefined"){
                     else {
                         parts[n] = [
                             kv[0],
-                            kv[1].replace(/%20/g,'&nbsp;').replace(/%3B/g,';').replace(/%2C/g,',').replace(/undefined/g,'<span class="undefined">undefined</span>')
+                            kv[1].replace(/%20/g,'&nbsp;').replace(/%3B/g,';').replace(/%2C/g,',').replace(/%252B/g,'&nbsp;').replace(/undefined/g,'<span class="undefined">undefined</span>')
                         ];
                     }
                 }
@@ -207,9 +211,10 @@ if(typeof(ftaceDecode)==="undefined"){
                 return false;
             }
 
-            var time = new Date(data.timestamp);
+            var time = new Date(data.timestamp),
+                url = splitUrl(data.url);
 
-            $.each(data.url, function(key,urlPart){
+            $.each(url, function(i, urlPart) {
                 var label, key=urlPart[0], values=urlPart[1];
 
                 if(key && values.length > 0) {
@@ -229,7 +234,7 @@ if(typeof(ftaceDecode)==="undefined"){
                     }
 
                     output.push('<tr><th colspan="2">'+label+' ('+key+')</th></tr>');
-                    $.each(values,function(i, value){
+                    $.each(values,function(n, value){
                         var k = value[0], v = value[1];
                         if(k){
                             if(typeof v === "undefined") {
@@ -256,13 +261,18 @@ if(typeof(ftaceDecode)==="undefined"){
                         userData = ftace.user_data;
 
                         createInterface();
-                        addRequests();
+                        addRequests(function(){
+                            $('#'+prefix+'_link_decoder #'+prefix+'_tabs').tabs( "option", "active", $('#'+prefix+'_link_decoder #'+prefix+'_tabs ul li[data-active=true]').index());
+
+                            updateInterval = setInterval(addRequests, 500);
+                        });
                     });
                 });
             },
 
             stop : function(){
                 lastUpdate = new Date(0);
+                clearInterval(updateInterval);
 
                 chrome.extension.sendMessage({}, function(ftace){
                     $('#'+ftace.prefix+'_link_decoder ol li a').off('click');

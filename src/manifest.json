@@ -22,12 +22,14 @@
 
         "http://ft.com/",
         "http://www.ft.com/*",
-        "http://search.ft.com/*",
-	"http://ftalphaville.ft.com/*",
-        "http://video.ft.com/*",
-        "http://howtospendit.ft.com/*",
-        "http://staging.howtospendit.ft.com/*",
-        "http://previewapp.labs.ft.com/*"
+        "http://*.aboutus.ft.com/",
+        "http://*.local.ft.com/*",
+        "http://*.rankings.ft.com/*",
+        "http://*.search.ft.com/*",
+	    "http://*.ftalphaville.ft.com/*",
+        "http://*.video.ft.com/*",
+        "http://*.howtospendit.ft.com/*",
+        "http://*.labs.ft.com/*"
     ],
 
     "background": {
@@ -40,5 +42,5 @@
         "default_popup": "popup.html"
     },
 
-    "update_url": "http://git.svc.ft.com/raw/digipub%2Fft-analytics-chrome-extension.git/HEAD/updates.xml"
+    "update_url": "https://sites.google.com/a/ft.com/web-analytics-new/tools/chrome-extension/updates.xml"
 }
