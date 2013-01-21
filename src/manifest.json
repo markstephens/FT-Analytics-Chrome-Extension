@@ -24,6 +24,8 @@
     "http://www.ft.com/*",
     "http://*.aboutus.ft.com/",
     "http://app.ft.com/*",
+    "http://*.blogs.ft.com/*",
+    "http://*.markets.ft.com/*",
     "http://*.local.ft.com/*",
     "http://*.rankings.ft.com/*",
     "http://*.search.ft.com/*",
@@ -31,7 +33,10 @@
     "http://*.video.ft.com/*",
     "http://*.howtospendit.ft.com/*",
     "http://*.labs.ft.com/*",
-    "http://*.podcast.ft.com/*"
+    "http://*.podcast.ft.com/*",
+    "http://*.lexicon.ft.com/*",
+    "https://*.ftsub.com/*",
+    "https://*.ft-live.com/*"
   ],
 
   "background": {
