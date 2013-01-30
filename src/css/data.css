@@ -23,3 +23,22 @@ span.FTACEdata {
     color: #0F0;
     text-shadow: 1px 1px 1px #666;
 }
+svg.FTACE.sixhours {
+    position: absolute;
+    font-size: 0.75em;
+    top: 10px;
+    left: 10px;
+    background: #FFF;
+    display: none;
+}
+svg.FTACE.sixhours path {
+    stroke: #000;
+    fill: none;
+    stroke-width: 1px;
+}
+svg.FTACE.sixhours .axis {
+    shape-rendering: crispEdges;
+}
+svg.FTACE.sixhours text.axis-title {
+    font-weight: bold;
+}
