@@ -22,21 +22,29 @@
 
     "http://ft.com/",
     "http://www.ft.com/*",
-    "http://*.aboutus.ft.com/",
-    "http://app.ft.com/*",
+
+    "http://*.aboutus.ft.com/*",
+    "http://*.app.ft.com/*",
     "http://*.blogs.ft.com/*",
-    "http://*.markets.ft.com/*",
-    "http://*.local.ft.com/*",
-    "http://*.rankings.ft.com/*",
-    "http://*.search.ft.com/*",
+    "http://*.ftadviser.com/*",
     "http://*.ftalphaville.ft.com/*",
-    "http://*.video.ft.com/*",
+    "http://*.funds.ft.com/*",
+    "http://*.help.ft.com/*",
     "http://*.howtospendit.ft.com/*",
     "http://*.labs.ft.com/*",
-    "http://*.podcast.ft.com/*",
     "http://*.lexicon.ft.com/*",
+    "http://*.local.ft.com/*",
+    "http://*.markets.ft.com/*",
+    "http://*.membership.ft.com/*",
+    "http://*.podcast.ft.com/*",
+    "http://*.previewapp.labs.ft.com/*",
+    "http://*.rankings.ft.com/*",
+    "http://*.registration.ft.com/*",
+    "http://*.search.ft.com/*",
+    "http://*.video.ft.com/*",
+    "https://*.ft-live.com/*",
     "https://*.ftsub.com/*",
-    "https://*.ft-live.com/*"
+    "https://*.sub.ft.com/*"
   ],
 
   "background": {

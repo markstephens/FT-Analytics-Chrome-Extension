@@ -115,7 +115,7 @@ FTAnalyticsChromeExtension.prototype.decodeIJentoRequest = function (url) {
 };
 
 FTAnalyticsChromeExtension.prototype.storeNetworkRequest = function (tabid, request) {
-  if (/^http:\/\/stats/.test(request.url) || /^http:\/\/app\.ft\.com\/track/.test(request.url)) {
+  if (/^http:\/\/stats/.test(request.url) || /^http:\/\/app\.ft\.com\/track/.test(request.url) || /^http:\/\/previewapp\.labs\.ft\.com\/track/.test(request.url)) {
     var self = this;
 
     chrome.tabs.get(tabid, function (tab) {

@@ -68,7 +68,12 @@ if (typeof (ftaceDecode) === "undefined") {
           } else {
             parts[part_index] = [
               kv[0],
-              kv[1].replace(/%20/g, '&nbsp;').replace(/%3B/g, ';').replace(/%2C/g, ',').replace(/%252B/g, '&nbsp;').replace(/undefined/g, '<span class="undefined">undefined</span>')
+              kv[1].replace(/%20/g, '&nbsp;')
+                .replace(/%3B/g, ';')
+                .replace(/%2C/g, ',')
+                .replace(/%252B/g, '&nbsp;')
+                .replace(/(undefined|null)/g, '<span class="undefined">' + RegExp.$1 + '</span>')
+                .replace(/&&/g, "&")
             ];
           }
         }
@@ -169,7 +174,7 @@ if (typeof (ftaceDecode) === "undefined") {
         }
       });
 
-      $('#' + prefix + '_link_decoder_view').html('<table><colgroup><col width="1" /><col width="*" /></colgroup>' + output.join('') + '</table>');
+      $('#' + prefix + '_link_decoder_view').html('<table><colgroup><col width="200" /><col width="*" /></colgroup>' + output.join('') + '</table>');
       $('#' + prefix + '_link_decoder_view').dialog({width: '60%', title: time + ' (' + data.ijHost + ')'});
     }
 
