@@ -175,7 +175,7 @@ if (typeof (ftaceDecode) === "undefined") {
       });
 
       $('#' + prefix + '_link_decoder_view').html('<table><colgroup><col width="200" /><col width="*" /></colgroup>' + output.join('') + '</table>');
-      $('#' + prefix + '_link_decoder_view').dialog({width: '60%', title: time + ' (' + data.ijHost + ')'});
+      $('#' + prefix + '_link_decoder_view').dialog({width: '60%', title: time + ' (' + data.ijHost + ')'}).closest(".ui-dialog").addClass(prefix);
     }
 
     //  One time only
@@ -188,7 +188,7 @@ if (typeof (ftaceDecode) === "undefined") {
         '</div>'
       ].join(''));
 
-      $('#' + prefix + '_link_decoder').dialog({ width: '80%', height: 400, maxHeight: 600, position: "bottom left" });
+      $('#' + prefix + '_link_decoder').dialog({ width: '80%', height: 400, maxHeight: 600, position: "bottom left" }).closest(".ui-dialog").addClass(prefix);
 
       $('#' + prefix + '_link_decoder').prev().append(['<form id="' + prefix + '_search">',
         '<input type="search" placeholder="Enter a key to highlight e.g. &quot;sm&quot;" value="', userData["decode.query"], '" />',

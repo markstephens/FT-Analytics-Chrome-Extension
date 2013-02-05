@@ -1,61 +1,64 @@
 {
-  "name": "FT Analytics",
-  "version": "0.1.0",
-  "manifest_version": 2,
-  "description": "The FT Analytics Chrome Extension.",
+    "name": "FT Analytics",
+    "version": "0.1.0",
+    "manifest_version": 2,
+    "description": "The FT Analytics Chrome Extension.",
 
-  "icons": {
-    "16":   "images/logo-16.png",
-    "48":   "images/logo-48.png",
-    "128":  "images/logo-128.png"
-  },
+    "icons": {
+        "16":   "images/logo-16.png",
+        "48":   "images/logo-48.png",
+        "128":  "images/logo-128.png"
+    },
 
-  "permissions": [
-    "tabs",
-    "storage",
-    "webRequest",
+    "permissions": [
+        "tabs",
+        "storage",
+        "webRequest",
 
-    "https://realtime.ijento.com/*",
+        "https://realtime.ijento.com/*",
 
-    "http://stats.ft.com/si/*",
-    "http://statstest.ft.com/si/*",
+        "http://stats.ft.com/si/*",
+        "https://stats.ft.com/si/*",
+        "http://statstest.ft.com/si/*",
+        "https://statstest.ft.com/si/*",
 
-    "http://ft.com/",
-    "http://www.ft.com/*",
+        "http://ft.com/",
+        "http://www.ft.com/*",
 
-    "http://*.aboutus.ft.com/*",
-    "http://*.app.ft.com/*",
-    "http://*.blogs.ft.com/*",
-    "http://*.ftadviser.com/*",
-    "http://*.ftalphaville.ft.com/*",
-    "http://*.funds.ft.com/*",
-    "http://*.help.ft.com/*",
-    "http://*.howtospendit.ft.com/*",
-    "http://*.labs.ft.com/*",
-    "http://*.lexicon.ft.com/*",
-    "http://*.local.ft.com/*",
-    "http://*.markets.ft.com/*",
-    "http://*.membership.ft.com/*",
-    "http://*.podcast.ft.com/*",
-    "http://*.previewapp.labs.ft.com/*",
-    "http://*.rankings.ft.com/*",
-    "http://*.registration.ft.com/*",
-    "http://*.search.ft.com/*",
-    "http://*.video.ft.com/*",
-    "https://*.ft-live.com/*",
-    "https://*.ftsub.com/*",
-    "https://*.sub.ft.com/*"
-  ],
+        "http://*.aboutus.ft.com/*",
+        "http://*.app.ft.com/*",
+        "http://*.blogs.ft.com/*",
+        "http://*.ftadviser.com/*",
+        "http://*.ftalphaville.ft.com/*",
+        "http://*.funds.ft.com/*",
+        "http://*.help.ft.com/*",
+        "http://*.howtospendit.ft.com/*",
+        "http://*.labs.ft.com/*",
+        "http://*.lexicon.ft.com/*",
+        "http://*.local.ft.com/*",
+        "http://*.markets.ft.com/*",
+        "http://*.membership.ft.com/*",
+        "http://*.podcast.ft.com/*",
+        "http://*.previewapp.labs.ft.com/*",
+        "http://*.rankings.ft.com/*",
+        "http://*.registration.ft.com/*",
+        "https://*.registration.ft.com/*",
+        "http://*.search.ft.com/*",
+        "http://*.video.ft.com/*",
+        "https://*.ft-live.com/*",
+        "https://*.ftsub.com/*",
+        "https://*.sub.ft.com/*"
+    ],
 
-  "background": {
-    "page": "background.html"
-  },
+    "background": {
+        "page": "background.html"
+    },
 
-  "page_action": {
-    "default_icon": "images/logo-16.grey.png",
-    "default_title": "FT Tracking",
-    "default_popup": "popup.html"
-  },
+    "page_action": {
+        "default_icon": "images/logo-16.grey.png",
+        "default_title": "FT Tracking",
+        "default_popup": "popup.html"
+    },
 
-  "update_url": "https://sites.google.com/a/ft.com/web-analytics-new/tools/chrome-extension/updates.xml"
+    "update_url": "https://sites.google.com/a/ft.com/web-analytics-new/tools/chrome-extension/updates.xml"
 }

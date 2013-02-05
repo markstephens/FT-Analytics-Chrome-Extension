@@ -115,7 +115,7 @@ FTAnalyticsChromeExtension.prototype.decodeIJentoRequest = function (url) {
 };
 
 FTAnalyticsChromeExtension.prototype.storeNetworkRequest = function (tabid, request) {
-  if (/^http:\/\/stats/.test(request.url) || /^http:\/\/app\.ft\.com\/track/.test(request.url) || /^http:\/\/previewapp\.labs\.ft\.com\/track/.test(request.url)) {
+  if (/^https?:\/\/stats/.test(request.url) || /^http:\/\/app\.ft\.com\/track/.test(request.url) || /^http:\/\/previewapp\.labs\.ft\.com\/track/.test(request.url)) {
     var self = this;
 
     chrome.tabs.get(tabid, function (tab) {
@@ -123,7 +123,7 @@ FTAnalyticsChromeExtension.prototype.storeNetworkRequest = function (tabid, requ
         self.network_requests[tabid] = {};
       }
 
-      var home_re = /^http:\/\/www\.ft\.com\/home\//, title = tab.title, url = tab.url, ijHost = request.url.match(/^http:\/\/([\w\-\.]+)/);
+      var home_re = /^http:\/\/www\.ft\.com\/home\//, title = tab.title, url = tab.url, ijHost = request.url.match(/^https?:\/\/([\w\-\.]+)/);
 
       if (home_re.test(url)) {
         title = url.replace(home_re, '').toUpperCase() + " Home";

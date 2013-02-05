@@ -7,11 +7,25 @@
 
 
 /* FT Additions */
+.FTACE, .FTACE * {
+    font-size: 13px !important;
+    line-height: normal;
+}
+.FTACE, .FTACE div {
+    padding: 8px !important;
+}
+.FTACE .ui-dialog-titlebar {
+    float: none !important;
+    height: inherit !important;
+    position: relative !important;
+    width: auto !important;
+    z-index: auto !important;
+}
 #FTACE_search {
     position: absolute;
     right: 5em;
     top: 0.4em;
-    font-size: 0.9em;
+    font-size: 13px;
     z-index: 1;
 }
 #FTACE_search input {
