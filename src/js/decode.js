@@ -63,22 +63,24 @@ if (typeof (ftaceDecode) === "undefined") {
                 for (part_index = 0; part_index < parts.length; part_index = part_index + 1) {
                     kv = parts[part_index].split("=");
 
-                    if (typeof kv[1] === "undefined") {
-                        parts[part_index] = [kv[0]];
-                    } else {
-                        parts[part_index] = [
-                            kv[0],
-                            kv[1].replace(/%20/g, '&nbsp;')
-                                .replace(/%3B/g, ';')
-                                .replace(/%2C/g, ',')
-                                .replace(/%252B/g, '&nbsp;')
-                                .replace(/(undefined|null)/g, '<span class="undefined">' + RegExp.$1 + '</span>')
-                                .replace(/&&/g, "&")
-                        ];
+                    if (kv[0] !== "") {
+                        if (typeof kv[1] === "undefined") {
+                            parts[part_index] = [kv[0]];
+                        } else {
+                            parts[part_index] = [
+                                kv[0],
+                                kv[1].replace(/%20/g, '&nbsp;')
+                                    .replace(/%3B/g, ';')
+                                    .replace(/%2C/g, ',')
+                                    .replace(/%252B/g, '&nbsp;')
+                                    .replace(/(undefined|null)/g, '<span class="undefined">' + RegExp.$1 + '</span>')
+                                    .replace(/&&/g, "&")
+                            ];
+                        }
                     }
                 }
 
-                url[url_index][1] = parts;
+                url[url_index][1] = $.grep(parts, function (o) { return (o !== ""); });
             }
 
             return url;
