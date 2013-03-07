@@ -26,6 +26,9 @@ FTAnalyticsChromeExtension.prototype.load = function (tab, module, callback) {
                     case 'data':
                         self.data(tab, callback);
                         break;
+                    case 'quarters':
+                        self.quarters(tab, callback);
+                        break;
                     case 'decode':
                         self.decode(tab, callback);
                         break;
@@ -73,6 +76,9 @@ FTAnalyticsChromeExtension.prototype.unload = function (tab, module) {
         break;
     case 'data':
         chrome.tabs.executeScript(null, { code : "ftaceData.stop();"});
+        break;
+    case 'quarters':
+        chrome.tabs.executeScript(null, { code : "ftaceQuarters.stop();"});
         break;
     case 'decode':
         chrome.tabs.executeScript(null, { code : "ftaceDecode.stop();"});
@@ -131,6 +137,16 @@ FTAnalyticsChromeExtension.prototype.data = function (tab, callback) {
         chrome.tabs.executeScript(tab, { file : "js/data.js" }, function () {
             chrome.tabs.executeScript(tab, { code : "ftaceData.init();"}, callback);
         });
+    });
+};
+
+FTAnalyticsChromeExtension.prototype.quarters = function (tab, callback) {
+    if (typeof callback === "undefined") { callback = function () {}; }
+    this.log('Loading', 'Quarters');
+
+    chrome.tabs.insertCSS(tab, { file : "css/quarters.css" });
+    chrome.tabs.executeScript(tab, { file : "js/quarters.js" }, function () {
+        chrome.tabs.executeScript(tab, { code : "ftaceQuarters.init();"}, callback);
     });
 };
 

@@ -6,7 +6,7 @@ function FTAnalyticsChromeExtension() {
     this.debug = true;
     this.urls = ["ft.com", "ftadviser.com", "ftsub.com", "ft-live.com", "ftdata.co.uk"];
     this.prefix = "FTACE";
-    this.modules = ["position", "data", "decode"];
+    this.modules = ["position", "data", "quarters", "decode"];
     this.user_data = {};
     this.network_requests = {};
     this.loaded = {};
