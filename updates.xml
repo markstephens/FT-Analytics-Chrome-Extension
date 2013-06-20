@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
-    <app appid='khoiaglncgjpgkhjpbeiplhblbjmfnme'>
-        <updatecheck codebase='https://sites.google.com/a/ft.com/web-analytics-new/tools/chrome-extension/FTAnalyticsChromeExtension.crx' version='0.1.0' prodversionmin='20.0.1132.43' />
+    <app appid='kpflllajkfjkfcgldpnmhekbmmmfiain'>
+        <updatecheck codebase='https://github.com/markstephens/FT-Analytics-Chrome-Extension/blob/master/FTAnalyticsChromeExtension.crx?raw=true' version='0.1.0' prodversionmin='20.0.1132.43' />
     </app>
 </gupdate>

@@ -61,5 +61,5 @@
         "default_popup": "popup.html"
     },
 
-    "update_url": "https://sites.google.com/a/ft.com/web-analytics-new/tools/chrome-extension/updates.xml"
+    "update_url": "https://raw.github.com/markstephens/FT-Analytics-Chrome-Extension/master/updates.xml"
 }
