@@ -9,7 +9,7 @@ if (typeof ftacePosition === "undefined") {
 
         function getElementPositionalData($element) {
             var zoneEl = $element.closest('[data-zone]'),
-                compEl    = $element.closest('[data-comp-view][data-comp-index][data-comp-name]'),
+                compEl    = $element.closest('[data-comp-view],[data-comp-index],[data-comp-name]'),
                 posEl = $element.closest('[data-pos]'),
                 storyPackageEl = $element.closest('.contentPackage'),
                 zone      = zoneEl.length ? zoneEl.data('zone') : null,
@@ -80,7 +80,34 @@ if (typeof ftacePosition === "undefined") {
                                 $label.push('<span style="color:' + $path[$data.label[data_index]] + '">' + $data.label[data_index] + '</span>');
                             }
 
-                            $(document).tooltip("option", "content", $label.join('/'));
+                            // New position
+                            var link = $(this),
+                                zone = link.closest('[data-zone]'),
+                                container = link.closest('[data-comp-view], [data-comp-name]'),
+                                pos = link.closest('[data-pos]'),
+                                name = link.attr('href').replace(/^http:\/\/[\w\.]+/, '').replace(/^\//, '').split('?')[0].replace(/\/$/, '').replace(/\.[a-z]{3,4}$/, ''),
+                                story = !!link.closest('.contentPackage').length;
+
+                            if (name === '') {
+                                name = link.attr('href').replace(/^http:\/\//, '').split('?')[0].replace(/\/$/, '');
+                            }
+
+                            name = $.grep(name.split('/').slice(-2), function (obj) { return (obj); });
+
+                            // If uuid then take final value only
+                            if (name.slice(-1)[0].match(/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/)) {
+                                name = name.slice(-1);
+                            }
+
+                            name = (name.length > 1 ? name.slice(0, 2).join('-') : name[0]).toLowerCase();
+
+                            $(document).tooltip("option", "content", '<span style="font-size: smaller;font-family: courier">' + $label.join('/') + '<br />' + $.grep([
+                                zone.data('zone'),
+                                container.data('comp-view') || container.data('comp-name'),
+                                pos.data('pos').toString(),
+                                name,
+                                (story ? 'storyPackage' : null)
+                            ], function (obj) { return (obj); }).join('/') + ' (new)</span>');
                         });
 
                         $('[data-pos] a').on('mouseleave.' + ftace.prefix, function () {
