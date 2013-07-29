@@ -2,35 +2,71 @@
 if (typeof ftacePosition === "undefined") {
     var ftacePosition = (function () {
 
-        var $colors = ['#090', '#00F', '#F90', '#F0F', '#099', '#666', '#000'],
-            $increment = 0,
-            $max_increment = $colors.length - 1,
-            $path = {};
+        /**
+         * Returns a string with the element info in the format of SI tracking.
+         * @param info Object Info about the elements in the format returned by the getElementInfo function
+         */
+        function getSiFormatOfElementInfo(info) {
+            return $.grep([
+                info.zone,
+                info.container,
+                info.pos,
+                info.name,
+                info.storyPackage
+            ], function (obj) { return (obj); }).join('/');
+        }
 
-        function getElementPositionalData($element) {
-            var zoneEl = $element.closest('[data-zone]'),
-                compEl    = $element.closest('[data-comp-view],[data-comp-index],[data-comp-name]'),
-                posEl = $element.closest('[data-pos]'),
-                storyPackageEl = $element.closest('.contentPackage'),
-                zone      = zoneEl.length ? zoneEl.data('zone') : null,
-                compView  = compEl.length ? compEl.data('comp-view') : null,
-                compIndex = compEl.length ? compEl.data('comp-index') : null,
-                compName  = compEl.length ? compEl.data('comp-name') : null,
-                pos  = posEl.length ? posEl.data('pos').toString() : null,
-                storyPackage = !!storyPackageEl.length,
-                $position = $element.position(),
-                $items = $.grep([
-                    zone,
-                    compName,
-                    compView,
-                    compIndex,
-                    pos,
-                    (storyPackage === true ? 'storyPackage' : false)
-                ], function (obj) { return (obj); });
+        /**
+         * Returns the element positioning info:
+         * zone, component view, component name, component index and position
+         *
+         * @param element Object The element clicked.
+         */
+        function getElementInfo(element) {
+            var zone = element.closest('[data-track-zone], [data-zone]'),
+                container = element.closest('[data-track-comp-view], [data-track-comp-name], [data-comp-view], [data-comp-name]'),
+                pos = element.closest('[data-track-pos], [data-pos]'),
+                name = element.attr('href') || '',
+                story = element.closest('.contentPackage');
+
+            // Build in error coping, as above assumes all attributes are there and available.
+            zone = (zone.length > 0 ? (zone.data('track-zone') || zone.data('zone')) : null);
+            container = (container.length > 0 ? (container.data('track-comp-view') || container.data('track-comp-name') || container.data('comp-view') || container.data('comp-name')) : null);
+            pos = (pos.length > 0 ? (typeof pos.data('track-pos') !== "undefined" ? pos.data('track-pos') : pos.data('pos')).toString() : null);
+            name = name.replace(/^http:\/\/[\w\.]+/, '') // Remove http://[something].
+                .replace(/^\//, '') // Remove slash at beginning
+                .replace(/(\?|#).*$/, '') // Remove query string and page anchor (#)
+                .replace(/\/$/, '') // Remove trailing slash
+                .replace(/\.[a-z]{3,4}$/, ''); // Remove final ".com" or similar
+            story = !!story.length;
+
+            // If it's an external URL
+            if (name === '') {
+                name = element.attr('href').replace(/^http:\/\//, '').split('?')[0].replace(/\/$/, '');
+            }
+
+            // If it broke completely...
+            if (name.length === 0) {
+                return { zone: '', container: '', pos: '', name: '', storyPackage: '' };
+            }
+
+            // Last 2 items of URL
+            name = $.grep(name.split('/').slice(-2), function (obj) { return (obj); });
+
+            // If uuid then take final value only
+            if (name.slice(-1)[0].match(/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/)) {
+                name = name.slice(-1);
+            }
+
+            // Remove slashes as final outcome is slash delimited
+            name = (name.length > 1 ? name.slice(0, 2).join('-') : name[0]).toLowerCase();
+
             return {
-                label : $items,
-                key : $.map($items, function (str) { return (str.toString()).toLowerCase().replace(/\W+/g, ''); }).join(''),
-                position : $position
+                zone: zone,
+                container: container,
+                pos: pos,
+                name: name,
+                storyPackage: (story ? 'storyPackage' : null)
             };
         }
 
@@ -38,89 +74,20 @@ if (typeof ftacePosition === "undefined") {
             init : function () {
                 $(document).ready(function () {
                     chrome.extension.sendMessage({}, function (ftace) {
-                        $('[data-comp-view],[data-comp-name],[data-zone]').on('mouseenter.' + ftace.prefix, function () {
-                            var $element = $(this),
-                                $color,
-                                $data = getElementPositionalData($element);
+                        $(document).tooltip({ track: true, items: "[data-pos] a, [data-track-pos] a", hide: false });
 
-                            $increment = ($increment > $max_increment ? 0 : ($increment + 1));
-                            $color = $colors[$increment];
-                            $path[$data.label[$data.label.length - 1]] = $color;
-                            $element.css('outline', 'dashed 2px ' + $color);
-
-                            $('#' + ftace.prefix + '_test').append('<li>' + $data.label[$data.label.length - 1] + ': ' + $color + '</li>');
-                        });
-
-                        $('[data-comp-view],[data-comp-name],[data-zone]').on('mouseleave.' + ftace.prefix, function () {
-                            var $element = $(this),
-                                $data = getElementPositionalData($element);
-
-                            delete $path[$data.label.join('/')];
-                            $increment = ($increment < 0 ? 0 : ($increment - 1));
-                            $element.css('outline', '');
-                            $('#' + ftace.prefix + '_test li:last').remove();
-                        });
-
-                        $(document).tooltip({ track: true, items: "[data-pos] a", hide: false });
-
-                        $('[data-pos] a').on('mouseenter.' + ftace.prefix, function () {
-                            var $element = $(this),
-                                $data = getElementPositionalData($element),
-                                $label = [],
-                                data_index;
-
+                        $('[data-pos] a, [data-track-pos] a').on('mouseenter.' + ftace.prefix, function () {
+                            var $element = $(this);
                             $element.css('outline', 'dashed 2px #F00');
-
-                            $path[$data.label[$data.label.length - 1]] = "#F00";
-                            if ($data.label[$data.label.length - 1] === "storyPackage") {
-                                $path[$data.label[$data.label.length - 2]] = "#F00";
-                            }
-
-                            for (data_index = 0; data_index < $data.label.length; data_index = data_index + 1) {
-                                $label.push('<span style="color:' + $path[$data.label[data_index]] + '">' + $data.label[data_index] + '</span>');
-                            }
-
-                            // New position
-                            var link = $(this),
-                                zone = link.closest('[data-zone]'),
-                                container = link.closest('[data-comp-view], [data-comp-name]'),
-                                pos = link.closest('[data-pos]'),
-                                name = link.attr('href').replace(/^http:\/\/[\w\.]+/, '').replace(/^\//, '').split('?')[0].replace(/\/$/, '').replace(/\.[a-z]{3,4}$/, ''),
-                                story = !!link.closest('.contentPackage').length;
-
-                            if (name === '') {
-                                name = link.attr('href').replace(/^http:\/\//, '').split('?')[0].replace(/\/$/, '');
-                            }
-
-                            name = $.grep(name.split('/').slice(-2), function (obj) { return (obj); });
-
-                            // If uuid then take final value only
-                            if (name.slice(-1)[0].match(/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/)) {
-                                name = name.slice(-1);
-                            }
-
-                            name = (name.length > 1 ? name.slice(0, 2).join('-') : name[0]).toLowerCase();
-
-                            $(document).tooltip("option", "content", '<span style="font-size: smaller;font-family: courier">' + $label.join('/') + '<br />' + $.grep([
-                                zone.data('zone'),
-                                container.data('comp-view') || container.data('comp-name'),
-                                pos.data('pos').toString(),
-                                name,
-                                (story ? 'storyPackage' : null)
-                            ], function (obj) { return (obj); }).join('/') + ' (new)</span>');
+                            $(document).tooltip("option", "content", '<span style="font-size: smaller;font-family: courier">' + getSiFormatOfElementInfo(getElementInfo($element)) + '</span>');
                         });
 
-                        $('[data-pos] a').on('mouseleave.' + ftace.prefix, function () {
+                        $('[data-pos] a, [data-track-pos] a').on('mouseleave.' + ftace.prefix, function () {
                             $(this).css('outline', '');
                             $(document).tooltip("close");
                         });
                     });
                 });
-            },
-
-            getPath : function () {
-                /*global console*/
-                console.log($path);
             },
 
             stop : function () {
